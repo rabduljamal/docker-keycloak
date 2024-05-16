@@ -1,0 +1,54 @@
+version: '3.2'
+
+services:
+  db:
+    image: postgres:alpine
+    ports:
+      - "5423:5432"
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: EDIT
+      POSTGRES_USER: EDIT
+      POSTGRES_PASSWORD: EDIT
+    networks:
+      - app-network
+
+  app:
+    image: quay.io/keycloak/keycloak:latest
+    hostname: keycloak
+    command: "start --https-certificate-file=/opt/jboss/keycloak/cert/cert.pem --https-certificate-key-file=/opt/jboss/keycloak/cert/key.pem"
+    environment:
+      TZ: "Asia/Jakarta"
+      KC_HOSTNAME: EDIT_DOMAIN_NAME
+      KC_HTTPS_PORT: 443
+      KC_HTTP_ENABLED: "true"
+      KC_DB: "postgres"
+      KC_DB_URL_HOST: "EDIT"
+      KC_DB_URL_DATABASE: "EDIT"
+      KC_DB_SCHEMA: "EDIT"
+      KC_DB_USERNAME: "EDIT"
+      KC_DB_PASSWORD: "EDIT"
+    ports:
+      - "8081:443"
+      - "8082:8080"
+    networks:
+      - app-network
+    volumes:
+      - keycloak_themes:/opt/keycloak/themes
+      - ./cert:/opt/jboss/keycloak/cert
+      - ./providers:/opt/keycloak/providers:rw
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+    depends_on:
+      - db
+
+networks:
+  app-network:
+    external: true
+
+volumes:
+  keycloak_themes:
