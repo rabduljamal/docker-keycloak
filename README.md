@@ -38,7 +38,7 @@ mv key.pem cert/
 to deploy 
 
 ```
-docker stack deploy -c keycloak
+docker stack deploy -c stack.yml keycloak
 ```
 
 to destroy
